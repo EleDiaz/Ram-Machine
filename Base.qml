@@ -26,7 +26,7 @@ Item {
                 model: modelIO
                 delegate: delegateIO
                 highlight: highlight
-                highlightFollowsCurrentItem: true
+                //highlightFollowsCurrentItem: true
             }
         }
     }

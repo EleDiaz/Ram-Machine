@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>Base.qml</file>
+        <file>ProgramDelegate.qml</file>
     </qresource>
 </RCC>

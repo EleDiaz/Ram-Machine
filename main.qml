@@ -4,7 +4,7 @@ import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.2
 import org.machine 1.0
 
-import "." as Custom
+//import "." as Custom
 
 Window {
     visible: true
@@ -13,7 +13,7 @@ Window {
     height: mainLayout.implicitHeight + 2 * margin
     minimumWidth: mainLayout.Layout.minimumWidth + 2 * margin
     minimumHeight: mainLayout.Layout.minimumHeight + 2 * margin
-    //color: "#4d4d4d"
+    color: "#4d4d4d"
     ToolBar {
         id: toolbar
         RowLayout {
@@ -46,7 +46,7 @@ Window {
         anchors.margins: 2
         columns: 2
 
-        Custom.Base {
+        Base {
             id: input
             Layout.fillWidth: true
 
@@ -55,33 +55,51 @@ Window {
             text: "Input tape"
         }
 
-        Custom.Base {
+        Base {
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.columnSpan: 1
             text: "Program"
             model: Program {}
-            delegate: Component {
-                Item {
-                    Layout.fillWidth: true
-                    height: 50
-                    Text {
-                        id: nameField
-                        text: 'hsv(' +
-                              Number(model.hue).toFixed(2) + ',' +
-                              Number(model.saturation).toFixed() + ',' +
-                              Number(model.brightness).toFixed() + ')'
-                        color: model.name
-                        anchors.centerIn: parent
-                        anchors.fill: parent
-
-                    }
+            delegate: ProgramDelegate {
+                text: 'hsv(' +
+                 Number(model.hue).toFixed(2) + ',' +
+                 Number(model.saturation).toFixed() + ',' +
+                 Number(model.brightness).toFixed() + ')'
+                color: model.name
+                onClicked: {
+                    ListView.view.currentIndex = index
+                    ListView.view.focus = true
                 }
             }
+//                Component {
+//                Item {
+//                    Layout.fillWidth: true
+//                    height: 50
+//                    Button {
+//                        id: nameField
+//                        text: 'hsv(' +
+//                              Number(model.hue).toFixed(2) + ',' +
+//                              Number(model.saturation).toFixed() + ',' +
+//                              Number(model.brightness).toFixed() + ')'
+//                        // color: model.name
+//                        anchors.centerIn: parent
+//                        anchors.fill: parent
+
+//                        onClicked: {
+//                            // make this delegate the current item
+//                            ui.reset()
+//                            view.currentIndex = index
+//                            view.focus = true
+//                        }
+
+//                    }
+//                }
+//            }
         }
 
 
-        Custom.Base {
+        Base {
             Layout.fillHeight: true
             Layout.minimumWidth: 200
             Layout.columnSpan: 1
@@ -89,7 +107,7 @@ Window {
 
         }
 
-        Custom.Base {
+        Base {
             Layout.fillWidth: true
             Layout.columnSpan: 2
             orientation: ListView.Horizontal

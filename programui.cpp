@@ -66,6 +66,17 @@ QVariant ProgramUI::data(const QModelIndex &index, int role) const
 //    return QVariant();
 }
 
+Qt::ItemFlags ProgramUI::flags(const QModelIndex & index) const {
+    return Qt::ItemIsSelectable | Qt::ItemIsEnabled ;
+}
+
+bool ProgramUI::setData(const QModelIndex & index, const QVariant & value, int role) {
+    qDebug() << "fsdfasdfa";
+    return true;
+}
+
+
+
 QHash<int, QByteArray> ProgramUI::roleNames() const
 {
     return m_roleNames;

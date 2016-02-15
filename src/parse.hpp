@@ -25,17 +25,33 @@ TODO: llevar este codigo al repo de haskell
 using namespace std;
 
 enum Token {
-  TagT,
-  InstructionT,
-  DirectT,
-  IndirectT,
-  ImmediateT,
-  Comment
+    TagT,
+    // Instructions
+    LoadT,
+    StoreT,
+    ReadT,
+    WriteT,
+    AddT,
+    SubT,
+    MulT,
+    DivT,
+    HaltT,
+    JumpT,
+    JgztT,
+    JzeroT,
+    // Direcionamiento
+    DirectT,
+    IndirectT,
+    ImmediateT,
+    CommentT,
 };
 
 class Parser {
 private:
   list<tuple<Token, string> > tokens_;
+
+  Token parserInstructions(string str);
+
 public:
   Parser(ifstream & file);
 
@@ -66,10 +82,41 @@ Parser::Parser(ifstream & file) {
       else if (pch[strlen(pch)])
         tokens_.push_back( tuple<Token, string>(TagT,string(pch)));
       else
-        tokens_.push_back( tuple<Token, string>(InstructionT,string(pch)));
+        tokens_.push_back( tuple<Token, string>(parserInstructions(string(pch)),string(pch)));
       pch = strtok(NULL, " ");
     }
   }
+}
+
+
+
+Token Parser::parserInstructions(string str) {
+    if (str.compare("load"))
+        return LoadT;
+    if (str.compare("store"))
+        return StoreT;
+    if (str.compare("read"))
+        return ReadT;
+    if (str.compare("write"))
+        return WriteT;
+    if (str.compare("add"))
+        return AddT;
+    if (str.compare("sub"))
+        return SubT;
+    if (str.compare("mul"))
+        return MulT;
+    if (str.compare("div"))
+        return DivT;
+    if (str.compare("halt"))
+        return HaltT;
+    if (str.compare("jump"))
+        return JumpT;
+    if (str.compare("jgzt"))
+        return JgztT;
+    if (str.compare("jzero"))
+        return JzeroT;
+    else
+        return ; // throws a error
 }
 
 
