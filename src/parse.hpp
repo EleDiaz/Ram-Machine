@@ -1,8 +1,10 @@
 #include <fstream>
 #include <list>
 #include <string>
-#include <cstring>
 #include <utility>
+#include <regex>
+#include <map>
+
 
 #include "program.hpp"
 
@@ -50,77 +52,104 @@ class Parser {
 private:
   list<tuple<Token, string> > tokens_;
 
-  Token parserInstructions(string str);
+  map<string, int> context_;
 
+  void parserParam(string str);
+
+  void parserInstructions(string str);
+
+  void parserComments(string str);
 public:
   Parser(ifstream & file);
 
   Program getProgram(void);
 };
 
-
+// INFO: Se esta usando \s como si fuese un \b debido a que nunca se da el caso de encontrar un \n
 Parser::Parser(ifstream & file) {
   if (!file.is_open())
     throw (-1);
 
   string line;
   while (getline(file, line)) {
-    switch (line[0]) {
-    case ';':
+    if (match_regex(line, regex("^\\s*;.*"))) // comments
+        tokens_.push_back(tuple<Token, string>(CommentT,line));
+    else {
+        smatch results;
+        if (match_regex(line, results, regex("^\\s*(\\w)\\s*:\\s*(.*)"))) {
+            tokens_.push_back(tuple<Token, string>(TagT, results[1]));
 
-      tokens_.push_back(tuple<Token, string>(Comment, line));
-      break;
-    default:
-      break;
-    }
-    char * pch = strtok(line, " "); // La peor funcion que existe
-    while (pch != nullptr) {
-      if (pch[0] == '=')
-        tokens_.push_back( tuple<Token, string>(ImmediateT,string(pch)));
-      else if (pch[0] == '*')
-        tokens_.push_back( tuple<Token, string>(DirectT,string(pch)));
-      else if (pch[strlen(pch)])
-        tokens_.push_back( tuple<Token, string>(TagT,string(pch)));
-      else
-        tokens_.push_back( tuple<Token, string>(parserInstructions(string(pch)),string(pch)));
-      pch = strtok(NULL, " ");
-    }
+            if (result[2].size()>0 && !parserComments(results[2]))
+                parserInstructions(results[2]);
+        }
+        else
+            parserInstructions(line);
+      }
   }
 }
 
+bool Parser::parserComments(string str) {
+    bool temp = match_regex(str, regex("^\\s*;.*"));
+    if (temp)
+        tokens_.push_back(tuple<Token, string>(CommentT,str));
+    return temp;
+}
 
-
-Token Parser::parserInstructions(string str) {
-    if (str.compare("load"))
-        return LoadT;
-    if (str.compare("store"))
-        return StoreT;
-    if (str.compare("read"))
-        return ReadT;
-    if (str.compare("write"))
-        return WriteT;
-    if (str.compare("add"))
-        return AddT;
-    if (str.compare("sub"))
-        return SubT;
-    if (str.compare("mul"))
-        return MulT;
-    if (str.compare("div"))
-        return DivT;
-    if (str.compare("halt"))
-        return HaltT;
-    if (str.compare("jump"))
-        return JumpT;
-    if (str.compare("jgzt"))
-        return JgztT;
-    if (str.compare("jzero"))
-        return JzeroT;
+void Parser::parserParam(string str) {
+    smatch results;
+    if (match_regex(str, results, regex("^=(\\d+)\\s*(.*)"))) {
+        tokens_.push_back(tuple<Token, string>(ImmediateT, results[1]));
+        parserComments(results[2]);
+    }
+    else if (match_regex(str, results, regex("^(\\d+)\\s*(.*)"))) {
+        tokens_.push_back(tuple<Token, string>(DirectT, result[1]));
+        parserComments(results[2]);
+    }
+    else if (match_regex(str, results, regex("^\\*(\\d+)\\s*(.*)"))) {
+        tokens_.push_back(tuple<Token, string>(IndirectT, result[1]));
+        parserComments(results[2]);
+    }
+    else if (match_regex(str, results, regex("^(\\w)\\s*(.*)"))) {
+        tokens_.push_back(tuple<Token, string>(TagT, results[1]));
+        parserComments(result[2]);
+    }
     else
-        return ; // throws a error
+        parserComments(str);
+}
+
+void Parser::parserInstructions(string str) {
+    smatch results;
+
+    auto helper = [=](string name) { return match_regex(str, results, regex("^"+name+"\\s+(.*)"));};
+
+    auto instructionsPairs =
+        { {"LOAD", LoadT}
+        , {"STORE", StoreT}
+        , {"READ", ReadT}
+        , {"WRITE", WriteT}
+        , {"ADD", AddT}
+        , {"SUB", Sub}
+        , {"MUL", MulT}
+        , {"DIV", DivT}
+        , {"HALT", HaltT}
+        , {"JUMP", JumpT}
+        , {"JGZT", JgztT}
+        , {"JZERO", JzeroT}
+        };
+
+
+    for (auto i : instructionsPairs) { // TODO usar iteradores con un while
+        if (helper(i.get<0>())) {
+            tokens_.push_back(tuple<Token,string>(i.get<1>(),i.get<0>()));
+            parserParam(results[1]);
+            break;
+        }
+    }// si no se ninguna ver si es comemtario si no es un error de compilacion
 }
 
 
 Program Parser::getProgram(void) {
+
   /** For tokens → tok
         yield get.format.instruction tok
    */

@@ -20,10 +20,15 @@ public:
 
     void run(Memory & mem, ITape & itape, OTape & otape, Program & prog) = 0;
 
-    string show(void);
+    string show(void) {
+
+    }
 
     string name(void);
 };
+
+class
+
 
 // Carga en el 0 registro de la memoria dato
 class Load : public Instruction {
