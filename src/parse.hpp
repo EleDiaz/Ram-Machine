@@ -1,3 +1,4 @@
+#pragma once
 #include <fstream>
 #include <list>
 #include <string>
@@ -7,6 +8,7 @@
 
 
 #include "program.hpp"
+#include "instruction.hpp"
 
 /**
    TODO: llevar este codigo al repo de haskell
@@ -28,6 +30,7 @@ using namespace std;
 
 enum Token {
   TagT,
+  RefTagT,
   // Instructions
   LoadT,
   StoreT,
@@ -54,11 +57,16 @@ private:
 
   map<string, int> context_;
 
+  int lineOfCode;
+
   void parserParam(string str);
 
   void parserInstructions(string str);
 
-  void parserComments(string str);
+  bool parserComments(string str);
+
+  tuple<int, Memory::DirectionMode> getParams(void);
+
 public:
   Parser(ifstream & file);
 
@@ -72,14 +80,15 @@ Parser::Parser(ifstream & file) {
 
   string line;
   while (getline(file, line)) {
-    if (match_regex(line, regex("^\\s*;.*"))) // comments
+    if (regex_match(line, regex("^\\s*;.*"))) // comments
       tokens_.push_back(tuple<Token, string>(CommentT,line));
     else {
       smatch results;
-      if (match_regex(line, results, regex("^\\s*(\\w)\\s*:\\s*(.*)"))) {
+      if (regex_match(line, results, regex("^\\s*(\\w)\\s*:\\s*(.*)"))) {
         tokens_.push_back(tuple<Token, string>(TagT, results[1]));
+        context_.insert(pair<string, int>(results[1], lineOfCode+1)); // Adding tag to context
 
-        if (result[2].size()>0 && !parserComments(results[2]))
+        if (results[2].length()>0 && !parserComments(results[2]))
           parserInstructions(results[2]);
       }
       else
@@ -88,8 +97,58 @@ Parser::Parser(ifstream & file) {
   }
 }
 
+Program Parser::getProgram(void) {
+  vector<Instruction> aux;
+  tuple<int,Memory::DirectionMode> auxParams;
+  while (!tokens_.empty()) {
+    switch (get<0>(tokens_.front())) {
+    case TagT:
+      tokens_.pop_front();
+      break;
+    case LoadT:
+      tokens_.pop_front();
+      auxParams = getParams(); // param and mode
+      aux.push_back(Instruction(Instruction::Load, get<0>(auxParams), get<1>(auxParams)));
+      break;
+    case StoreT:
+      ;
+    case ReadT:
+    case WriteT:
+    case AddT:
+    case SubT:
+    case MulT:
+    case DivT:
+    case HaltT:
+    case JumpT:
+    case JgztT:
+    case JzeroT:
+    case DirectT:
+    case IndirectT:
+    case ImmediateT:
+    case CommentT:
+      break;
+    default:
+      // TODO: no se soporta tal situacion exponer caso "error"
+      break;
+    }
+  }
+
+  // case RefTagT:
+  //   auto it = context_.find(get<1>(tokens_.front()));
+  //   if (context_.end() == it)
+  //     ; // TODO: Error tag sin definir llamada desde el jump tal
+  // }
+  /** For tokens → tok
+      yield get.format.instruction tok
+  */
+}
+
+tuple<int, Memory::DirectionMode> Parser::getParams(void) {
+}
+
+
 bool Parser::parserComments(string str) {
-  bool temp = match_regex(str, regex("^\\s*;.*"));
+  bool temp = regex_match(str, regex("^\\s*;.*"));
   if (temp)
     tokens_.push_back(tuple<Token, string>(CommentT,str));
   return temp;
@@ -97,21 +156,25 @@ bool Parser::parserComments(string str) {
 
 void Parser::parserParam(string str) {
   smatch results;
-  if (match_regex(str, results, regex("^=(\\d+)\\s*(.*)"))) {
+  if (regex_match(str, results, regex("^=(\\d+)\\s*(.*)"))) {
     tokens_.push_back(tuple<Token, string>(ImmediateT, results[1]));
     parserComments(results[2]);
+    lineOfCode++;
   }
-  else if (match_regex(str, results, regex("^(\\d+)\\s*(.*)"))) {
-    tokens_.push_back(tuple<Token, string>(DirectT, result[1]));
+  else if (regex_match(str, results, regex("^(\\d+)\\s*(.*)"))) {
+    tokens_.push_back(tuple<Token, string>(DirectT, results[1]));
     parserComments(results[2]);
+    lineOfCode++;
   }
-  else if (match_regex(str, results, regex("^\\*(\\d+)\\s*(.*)"))) {
-    tokens_.push_back(tuple<Token, string>(IndirectT, result[1]));
+  else if (regex_match(str, results, regex("^\\*(\\d+)\\s*(.*)"))) {
+    tokens_.push_back(tuple<Token, string>(IndirectT, results[1]));
     parserComments(results[2]);
+    lineOfCode++;
   }
-  else if (match_regex(str, results, regex("^(\\w)\\s*(.*)"))) {
-    tokens_.push_back(tuple<Token, string>(TagT, results[1]));
-    parserComments(result[2]);
+  else if (regex_match(str, results, regex("^(\\w)\\s*(.*)"))) {
+    tokens_.push_back(tuple<Token, string>(RefTagT, results[1])); // TODO
+    parserComments(results[2]);
+    lineOfCode++;
   }
   else
     parserComments(str);
@@ -120,15 +183,15 @@ void Parser::parserParam(string str) {
 void Parser::parserInstructions(string str) {
   smatch results;
 
-  auto helper = [=](string name) { return match_regex(str, results, regex("^"+name+"\\s+(.*)"));};
+  auto helper = [&](string name) { return regex_match(str, results, regex("^"+name+"\\s+(.*)"));};
 
-  auto instructionsPairs =
+  map<string, Token> instructionsPairs
     { {"LOAD", LoadT}
       , {"STORE", StoreT}
       , {"READ", ReadT}
       , {"WRITE", WriteT}
       , {"ADD", AddT}
-      , {"SUB", Sub}
+      , {"SUB", SubT}
       , {"MUL", MulT}
       , {"DIV", DivT}
       , {"HALT", HaltT}
@@ -137,44 +200,15 @@ void Parser::parserInstructions(string str) {
       , {"JZERO", JzeroT}
     };
 
-
-  for (auto i : instructionsPairs) { // TODO usar iteradores con un while
-    if (helper(i.get<0>())) {
-      tokens_.push_back(tuple<Token,string>(i.get<1>(),i.get<0>()));
+  map<string, Token>::iterator it = instructionsPairs.begin();
+  bool found = false;
+  while (!found && it != instructionsPairs.end()) {
+    if (helper(it->first)) {
+      tokens_.push_back(tuple<Token,string>(it->second,it->first));
       parserParam(results[1]);
-      break;
     }
-  }// si no se ninguna ver si es comemtario si no es un error de compilacion
-}
-
-
-Program Parser::getProgram(void) {
-
-  while (!tokens_.empty()) {
-    switch (tokens_front()) {
-        TagT
-        LoadT,
-        StoreT,
-        ReadT,
-        WriteT,
-        AddT,
-        SubT,
-        MulT,
-        DivT,
-        HaltT,
-        JumpT,
-        JgztT,
-        JzeroT,
-
-        DirectT,
-        IndirectT,
-        ImmediateT,
-        CommentT,
-
-    case
-    }
+    it++;
   }
-    /** For tokens → tok
-        yield get.format.instruction tok
-    */
 }
+
+

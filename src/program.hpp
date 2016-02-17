@@ -1,23 +1,21 @@
-#pragma once
+#ifndef PROGRAM_CLASS
+#define PROGRAM_CLASS
+
 #include <vector>
-#include <list>
-#include <map>
+
+class Instruction;
 
 #include "instruction.hpp"
 
 using namespace std;
 
-class Instruction;
-
 class Program {
 private:
-    vector<list<Instruction> > program_;
-    int pos_;
-    map<string, int> context_;
+  vector<Instruction> program_;
+  int pos_;
 public:
-    Program();
-    void insertInstructions(list<Instruction>);
-    void moveTo(string tag) {
-        pos_ = context_.at(tag);
-    }
+  Program(vector<Instruction> program);
+  vector<Instruction> getProgram(void);
+  void moveTo(int newPos);
 };
+#endif

@@ -6,7 +6,9 @@ CONFIG += c++11
 SOURCES += main.cpp \
     programui.cpp \
     uibind.cpp \
-    src/machine.cpp
+    src/machine.cpp \
+    src/instruction.cpp \
+    src/program.cpp
 
 RESOURCES += qml.qrc
 
