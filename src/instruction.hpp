@@ -4,9 +4,7 @@
  */
 #include <functional>
 
-class Program;
-
-#include "program.hpp"
+#include "counter.hpp"
 #include "otape.hpp"
 #include "itape.hpp"
 #include "memory.hpp"
@@ -30,13 +28,13 @@ public:
 
   struct Annotation {
     const string name;
-    function<void (int param, Memory::DirectionMode mode
+    function<bool (int param, Memory::DirectionMode mode
                    , Memory & mem, ITape & itape, OTape & otape
-                   , Program & prog)> action;
+                   , Counter & counter)> action;
   };
 
   // Normal instructions like read store...
-  Instruction(Instruction::IOpcode opcode, int param, Memory::DirectionMode mode):
+  Instruction(IOpcode opcode, int param, Memory::DirectionMode mode):
     mode_(nullptr),
     param_(nullptr),
     opcode_(opcode) {
@@ -45,17 +43,18 @@ public:
   }
 
   // jump's instructions
-  Instruction(int param, IOpcode opcode): mode_(nullptr), param_(nullptr), opcode_(opcode) {
+  Instruction(IOpcode opcode, int param): mode_(nullptr), param_(nullptr), opcode_(opcode) {
     param_ = &param;
   }
 
   // Halt instruction
   Instruction(IOpcode opcode): mode_(nullptr), param_(nullptr), opcode_(opcode) {}
-  //virtual void run(Memory & mem, ITape & itape, OTape & otape, Program & prog) = 0;
+  //virtual void run(Memory & mem, ITape & itape, OTape & otape, Counter & prog) = 0;
 
   // Run a instruction depending of token give, if this not represent a valid Intructions it throws a exception
-  void runAction(Memory & mem, ITape & itape, OTape & otape, Program & prog) {
-    instructions[opcode_];
+  // return if continue program or exit
+  bool runAction(Memory & mem, ITape & itape, OTape & otape, Counter & counter) {
+    return instructions[opcode_].action(*param_, *mode_, mem, itape, otape, counter);
   }
 
 public:
@@ -71,7 +70,7 @@ public:
 // class Load : public Instruction {
 //   //string show(void) { return; }
 //   Load(int param, Memory::DirectionMode mode): Instruction(param,mode) {}
-//   void run(Memory & mem, ITape & itape, OTape & otape, Program & prog) {
+//   void run(Memory & mem, ITape & itape, OTape & otape, Counter & prog) {
 //     mem.setValue(0, mem.getValue(param_,mode_), Memory::Direct);
 //   }
 // };
@@ -79,7 +78,7 @@ public:
 // class Store : public Instruction {
 //   //string show(void) { return; }
 //   Store(int param, Memory::DirectionMode mode): Instruction(param,mode) {}
-//   void run(Memory & mem, ITape & itape, OTape & otape, Program & prog) {
+//   void run(Memory & mem, ITape & itape, OTape & otape, Counter & prog) {
 //     mem.setValue(param_, mem.getValue(0, Memory::Direct), mode_);
 //   }
 
@@ -89,7 +88,7 @@ public:
 // class Read : public Instruction {
 //   //string show(void) { return }
 //   Read(int param, Memory::DirectionMode mode): Instruction(param,mode) {}
-//   void run(Memory & mem, ITape & itape, OTape & otape, Program & prog) {
+//   void run(Memory & mem, ITape & itape, OTape & otape, Counter & prog) {
 //     mem.setValue(param_, itape.readTape(), mode_);
 //   }
 
@@ -98,7 +97,7 @@ public:
 // class Write : public Instruction {
 //   //string show(void) { return }
 //   Write(int param, Memory::DirectionMode mode): Instruction(param,mode) {}
-//   void run(Memory & mem, ITape & itape, OTape & otape, Program & prog) {
+//   void run(Memory & mem, ITape & itape, OTape & otape, Counter & prog) {
 //     otape.writeTape(mem.getValue(param_, mode_));
 //   }
 // };
@@ -107,7 +106,7 @@ public:
 // class Add : public Instruction {
 //   //string show(void) { return }
 //   Add(int param, Memory::DirectionMode mode): Instruction(param,mode) {}
-//   void run(Memory & mem, ITape & itape, OTape & otape, Program & prog) {
+//   void run(Memory & mem, ITape & itape, OTape & otape, Counter & prog) {
 //     mem.setValue(0, mem.getValue(param_,mode_)+mem.getValue(0,Memory::Direct), Memory::Direct);
 //   }
 // };
@@ -115,7 +114,7 @@ public:
 // class Sub : public Instruction {
 //   //string show(void) { return }
 //   Sub(int param, Memory::DirectionMode mode): Instruction(param,mode) {}
-//   void run(Memory & mem, ITape & itape, OTape & otape, Program & prog) {
+//   void run(Memory & mem, ITape & itape, OTape & otape, Counter & prog) {
 //     mem.setValue(0, mem.getValue(param_,mode_)-mem.getValue(0,Memory::Direct), Memory::Direct);
 //   }
 // };
@@ -123,7 +122,7 @@ public:
 // class Mul : public Instruction {
 //   //string show(void) { return }
 //   Mul(int param, Memory::DirectionMode mode): Instruction(param,mode) {}
-//   void run(Memory & mem, ITape & itape, OTape & otape, Program & prog) {
+//   void run(Memory & mem, ITape & itape, OTape & otape, Counter & prog) {
 //     mem.setValue(0, mem.getValue(param_,mode_)*mem.getValue(0,Memory::Direct), Memory::Direct);
 //   }
 // };
@@ -131,7 +130,7 @@ public:
 // class Div : public Instruction {
 //   //string show(void) { return }
 //   Div(int param, Memory::DirectionMode mode): Instruction(param,mode) {}
-//   void run(Memory & mem, ITape & itape, OTape & otape, Program & prog) {
+//   void run(Memory & mem, ITape & itape, OTape & otape, Counter & prog) {
 //     mem.setValue(0, mem.getValue(param_,mode_) / mem.getValue(0,Memory::Direct), Memory::Direct);
 //   }
 // };
@@ -140,7 +139,7 @@ public:
 // class Halt : public Instruction {
 //   //string show(void) { return }
 //   Halt(int param, Memory::DirectionMode mode): Instruction(param,mode) {}
-//   void run(Memory & mem, ITape & itape, OTape & otape, Program & prog) {
+//   void run(Memory & mem, ITape & itape, OTape & otape, Counter & prog) {
 //     // TODO:
 //   }
 
@@ -149,7 +148,7 @@ public:
 // class Jump : public Instruction {
 //   //string show(void) { return }
 //   Jump(int param, Memory::DirectionMode mode): Instruction(param,mode) {}
-//   void run(Memory & mem, ITape & itape, OTape & otape, Program & prog) {
+//   void run(Memory & mem, ITape & itape, OTape & otape, Counter & prog) {
 //     //prog.moveTo(param_);
 //   }
 
@@ -157,7 +156,7 @@ public:
 // class Jgtz : public Instruction {
 //   //string show(void) { return }
 //   Jgtz(int param, Memory::DirectionMode mode): Instruction(param,mode) {}
-//   void run(Memory & mem, ITape & itape, OTape & otape, Program & prog) {
+//   void run(Memory & mem, ITape & itape, OTape & otape, Counter & prog) {
 //     // TODO:
 //   }
 
@@ -165,7 +164,7 @@ public:
 // class Jzero : public Instruction {
 //   //string show(void) { return }
 //   Jzero(int param, Memory::DirectionMode mode): Instruction(param,mode) {}
-//   void run(Memory & mem, ITape & itape, OTape & otape, Program & prog) {
+//   void run(Memory & mem, ITape & itape, OTape & otape, Counter & prog) {
 //     // TODO:
 //   }
 

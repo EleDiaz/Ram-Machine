@@ -7,8 +7,8 @@
 #include <map>
 
 
-#include "program.hpp"
 #include "instruction.hpp"
+#include "commonExceptions.hpp"
 
 /**
    TODO: llevar este codigo al repo de haskell
@@ -24,9 +24,21 @@
    , Indirect <$> char '*' >> many1 digit
    , Indirect <$> char '=' >> many1 digit
    ]
+
+   TODO: Problema grande!!
+   <<<
+   hola:
+        instr dd
+        instr next
+   next: // me salta a un lugar no comtemplado he estupido > error
+   >>>
+
+// Nota de milagro funciona bien el line of code
 */
 
 using namespace std;
+
+typedef vector<Instruction> Program;
 
 enum Token {
   TagT,
@@ -65,7 +77,7 @@ private:
 
   bool parserComments(string str);
 
-  tuple<int, Memory::DirectionMode> getParams(void);
+  tuple<int, Memory::DirectionMode, bool> getParams(void);
 
 public:
   Parser(ifstream & file);
@@ -99,51 +111,125 @@ Parser::Parser(ifstream & file) {
 
 Program Parser::getProgram(void) {
   vector<Instruction> aux;
-  tuple<int,Memory::DirectionMode> auxParams;
+  tuple<int, Memory::DirectionMode, bool> auxParams;
+  auto helper = [&] (Instruction::IOpcode inst){
+    tokens_.pop_front();
+    auxParams = getParams(); // param and mode
+    if (!(get<0>(auxParams) > 0 && get<2>(auxParams)))
+      ; // throw UnexpectedToken("`" + get<1>(auxParams) + "` sino =int,*int o int");
+    aux.push_back(Instruction(inst, get<0>(auxParams), get<1>(auxParams)));
+  };
+
   while (!tokens_.empty()) {
-    switch (get<0>(tokens_.front())) {
+    switch (get<0>(tokens_.front())){
     case TagT:
       tokens_.pop_front();
       break;
+
     case LoadT:
-      tokens_.pop_front();
-      auxParams = getParams(); // param and mode
-      aux.push_back(Instruction(Instruction::Load, get<0>(auxParams), get<1>(auxParams)));
+      helper(Instruction::Load);
       break;
+
     case StoreT:
-      ;
+      tokens_.pop_front();
+      auxParams = getParams();
+      if (!(get<0>(auxParams) > 0 && get<2>(auxParams) && get<1>(auxParams) == Memory::Immediate))
+        ; // TODO: no se espera el siguiente token
+      aux.push_back(Instruction(Instruction::Store, get<0>(auxParams), get<1>(auxParams)));
+      break;
+
     case ReadT:
+      tokens_.pop_front();
+      auxParams = getParams();
+      if (!(get<0>(auxParams) > 0 && get<2>(auxParams) && get<1>(auxParams) == Memory::Immediate))
+        ; // TODO: no se espera el siguiente token
+      aux.push_back(Instruction(Instruction::Read, get<0>(auxParams), get<1>(auxParams)));
+      break;
+
     case WriteT:
+      helper(Instruction::Write);
+      break;
+
     case AddT:
+      helper(Instruction::Add);
+      break;
+
     case SubT:
+      helper(Instruction::Sub);
+      break;
+
     case MulT:
+      helper(Instruction::Mul);
+      break;
+
     case DivT:
+      helper(Instruction::Div);
+      break;
+
     case HaltT:
+      tokens_.pop_front();
+      aux.push_back(Instruction(Instruction::Halt));
+      break;
+
     case JumpT:
+      tokens_.pop_front();
+      auxParams = getParams();
+      if (get<2>(auxParams))
+        throw UnexpectedToken(get<1>(tokens_.front()) + "  Expected Token: Tag Name");
+      aux.push_back(Instruction(Instruction::Jump,get<0>(auxParams)));
+      break;
+
     case JgztT:
+      tokens_.pop_front();
+      auxParams = getParams();
+      if (get<2>(auxParams))
+        throw UnexpectedToken(get<1>(tokens_.front()) + "  Expected Token: Tag Name");
+      aux.push_back(Instruction(Instruction::Jgzt,get<0>(auxParams)));
+      break;
+
     case JzeroT:
-    case DirectT:
-    case IndirectT:
-    case ImmediateT:
+      tokens_.pop_front();
+      auxParams = getParams();
+      if (get<2>(auxParams))
+        throw UnexpectedToken(get<1>(tokens_.front()) + "  Expected Token: Tag Name");
+      aux.push_back(Instruction(Instruction::Jzero,get<0>(auxParams)));
+      break;
+
     case CommentT:
       break;
+
     default:
-      // TODO: no se soporta tal situacion exponer caso "error"
+      throw UnexpectedToken(get<1>(tokens_.front()));
       break;
     }
   }
-
-  // case RefTagT:
-  //   auto it = context_.find(get<1>(tokens_.front()));
-  //   if (context_.end() == it)
-  //     ; // TODO: Error tag sin definir llamada desde el jump tal
-  // }
-  /** For tokens → tok
-      yield get.format.instruction tok
-  */
+  return aux;
 }
 
-tuple<int, Memory::DirectionMode> Parser::getParams(void) {
+tuple<int, Memory::DirectionMode, bool> Parser::getParams(void) {
+  int aux;
+  switch (get<0>(tokens_.front())){
+  case DirectT:
+    aux = stoi(get<1>(tokens_.front()));
+    return tuple<int, Memory::DirectionMode, bool> (aux, Memory::Direct, true);
+
+  case IndirectT:
+    aux = stoi(get<1>(tokens_.front()));
+    return tuple<int, Memory::DirectionMode, bool> (aux, Memory::Indirect, true);
+
+  case ImmediateT:
+    aux = stoi(get<1>(tokens_.front()));
+    return tuple<int, Memory::DirectionMode, bool> (aux, Memory::Immediate, true);
+
+  case RefTagT:
+    if (context_.end() == context_.find(get<1>(tokens_.front())))
+      throw TagNotFound(get<1>(tokens_.front()));
+    aux = context_[get<1>(tokens_.front())];
+    return tuple<int, Memory::DirectionMode, bool> (aux, Memory::Immediate, false);
+
+  default:
+    throw UnexpectedToken(get<1>(tokens_.front())); // FIXME: Token type to text
+  }
 }
 
 
@@ -159,22 +245,18 @@ void Parser::parserParam(string str) {
   if (regex_match(str, results, regex("^=(\\d+)\\s*(.*)"))) {
     tokens_.push_back(tuple<Token, string>(ImmediateT, results[1]));
     parserComments(results[2]);
-    lineOfCode++;
   }
   else if (regex_match(str, results, regex("^(\\d+)\\s*(.*)"))) {
     tokens_.push_back(tuple<Token, string>(DirectT, results[1]));
     parserComments(results[2]);
-    lineOfCode++;
   }
   else if (regex_match(str, results, regex("^\\*(\\d+)\\s*(.*)"))) {
     tokens_.push_back(tuple<Token, string>(IndirectT, results[1]));
     parserComments(results[2]);
-    lineOfCode++;
   }
   else if (regex_match(str, results, regex("^(\\w)\\s*(.*)"))) {
-    tokens_.push_back(tuple<Token, string>(RefTagT, results[1])); // TODO
+    tokens_.push_back(tuple<Token, string>(RefTagT, results[1]));
     parserComments(results[2]);
-    lineOfCode++;
   }
   else
     parserComments(str);
@@ -206,6 +288,7 @@ void Parser::parserInstructions(string str) {
     if (helper(it->first)) {
       tokens_.push_back(tuple<Token,string>(it->second,it->first));
       parserParam(results[1]);
+      lineOfCode++; // nueva instrucción a establecer la siguiente linea de codigo
     }
     it++;
   }

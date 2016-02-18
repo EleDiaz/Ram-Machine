@@ -7,8 +7,7 @@ SOURCES += main.cpp \
     programui.cpp \
     uibind.cpp \
     src/machine.cpp \
-    src/instruction.cpp \
-    src/program.cpp
+    src/instruction.cpp
 
 RESOURCES += qml.qrc
 
@@ -23,7 +22,6 @@ HEADERS += \
     src/machine.hpp \
     src/itape.hpp \
     src/otape.hpp \
-    src/program.hpp \
     src/parse.hpp \
     src/memory.hpp \
     src/instruction.hpp \
