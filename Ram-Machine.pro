@@ -4,10 +4,13 @@ QT += qml quick
 CONFIG += c++11
 
 SOURCES += main.cpp \
-    programui.cpp \
     uibind.cpp \
     src/machine.cpp \
-    src/instruction.cpp
+    src/instruction.cpp \
+    src/parse.cpp \
+    model.cpp \
+    tapemodel.cpp \
+    programmodel.cpp
 
 RESOURCES += qml.qrc
 
@@ -18,14 +21,17 @@ QML_IMPORT_PATH =
 include(deployment.pri)
 
 HEADERS += \
-    programui.h \
     src/machine.hpp \
     src/itape.hpp \
     src/otape.hpp \
     src/parse.hpp \
     src/memory.hpp \
     src/instruction.hpp \
-    uibind.hpp
+    src/counter.hpp \
+    uibind.hpp \
+    model.hpp \
+    tapemodel.hpp \
+    programmodel.hpp
 
 
 DISTFILES += \

@@ -8,7 +8,7 @@ Item {
     property alias model: listView.model
     property alias delegate: listView.delegate
     property alias text: gb.title
-    Layout.minimumHeight: 84
+    Layout.minimumHeight: 60
     GroupBox {
         id: gb
         anchors.fill: parent
@@ -18,7 +18,7 @@ Item {
             clip: true
             color: "#c6c3c3"
             anchors.fill: parent
-            Layout.minimumHeight: 50
+            //Layout.minimumHeight: 50
             ListView {
                 id: listView
                 anchors.centerIn: parent
@@ -26,41 +26,7 @@ Item {
                 model: modelIO
                 delegate: delegateIO
                 highlight: highlight
-                //highlightFollowsCurrentItem: true
-            }
-        }
-    }
-    ListModel {
-        id: modelIO
-        ListElement {
-            value: 1
-        }
-        ListElement {
-            value: 5
-        }
-        ListElement {
-            value: 0
-        }
-        ListElement {
-            value: 2
-        }
-        ListElement {
-            value: 2
-        }
-        ListElement {
-            value: 1
-        }
-    }
-
-    Component {
-        id: delegateIO
-        Item {
-            width: 50; height: 50
-            Text {
-                id: nameField
-                text: value
-                anchors.centerIn: parent
-
+                highlightFollowsCurrentItem: true
             }
         }
     }
@@ -70,7 +36,7 @@ Item {
         Rectangle {
             width: 50; height: 50
             color: "#a1a3aa"; radius: 1
-            y: list.currentItem.y
+            //y: list.currentItem.y
             Behavior on y {
                 SpringAnimation {
                     spring: 3

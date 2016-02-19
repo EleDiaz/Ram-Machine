@@ -1,3 +1,4 @@
+#pragma once
 /**
 
  */
@@ -21,10 +22,13 @@ public:
     Immediate
   };
 
-  Memory(int size);
+  Memory(int size): memory_(size) {
+  }
+
   int getAccumulator(void) {
     return memory_[0];
   }
+
   void setAccumulator(int value) {
     memory_[0] = value;
   }

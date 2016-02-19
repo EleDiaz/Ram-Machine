@@ -13,7 +13,7 @@ public:
   }
 
   int getCounter(void) {
-    return pos_;
+    return pos_++;
   }
 
   void next(void) {

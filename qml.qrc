@@ -3,5 +3,6 @@
         <file>main.qml</file>
         <file>Base.qml</file>
         <file>ProgramDelegate.qml</file>
+        <file>TapeDelegate.qml</file>
     </qresource>
 </RCC>
