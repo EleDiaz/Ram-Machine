@@ -3,11 +3,14 @@
 /**
  */
 #include <functional>
+#include <iostream>
 
 #include "counter.hpp"
 #include "otape.hpp"
 #include "itape.hpp"
 #include "memory.hpp"
+
+using namespace std;
 
 class Instruction {
 public:
@@ -35,33 +38,54 @@ public:
 
   // Normal instructions like read store...
   Instruction(IOpcode opcode, int param, Memory::DirectionMode mode):
-    mode_(nullptr),
-    param_(nullptr),
+    mode_(),
+    param_(),
     opcode_(opcode) {
-    param_ = &param;
-    mode_ = &mode;
+    param_ = param;
+    mode_ = mode;
   }
 
   // jump's instructions
-  Instruction(IOpcode opcode, int param): mode_(nullptr), param_(nullptr), opcode_(opcode) {
-    param_ = &param;
+  Instruction(IOpcode opcode, int param): mode_(), param_(), opcode_(opcode) {
+    param_ = param;
   }
 
   // Halt instruction
-  Instruction(IOpcode opcode): mode_(nullptr), param_(nullptr), opcode_(opcode) {}
+  Instruction(IOpcode opcode): mode_(), param_(), opcode_(opcode) {}
   //virtual void run(Memory & mem, ITape & itape, OTape & otape, Counter & prog) = 0;
 
   // Run a instruction depending of token give, if this not represent a valid Intructions it throws a exception
   // return if continue program or exit
   bool runAction(Memory & mem, ITape & itape, OTape & otape, Counter & counter) {
-    return instructions[opcode_].action(*param_, *mode_, mem, itape, otape, counter);
+    //cout << ">>> " << instructions[opcode_].name << "\t" << param_ << endl;
+    return instructions[opcode_].action(param_, mode_, mem, itape, otape, counter);
+  }
+
+  string name(void) const {
+    return instructions[opcode_].name;
+  }
+
+  string showParam(void) const {
+    if (opcode_ == Halt) {
+      return "";
+    }
+    else {
+      switch (mode_) {
+      case Memory::Immediate:
+        return "="+to_string(param_);
+      case Memory::Direct:
+        return ""+to_string(param_);
+      case Memory::Indirect:
+        return "*"+to_string(param_);
+      }
+    }
   }
 
 public:
   // especify a mode of direction memory if is halt is null
-  Memory::DirectionMode * mode_;
+  Memory::DirectionMode mode_;
   // is could be a direction or immediate or tag(int pos), null when halt
-  int * param_;
+  int param_;
   IOpcode opcode_;
   static const vector<Instruction::Annotation> instructions;
 };

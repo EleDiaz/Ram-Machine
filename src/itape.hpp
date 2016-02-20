@@ -3,23 +3,33 @@
 
  */
 
-#include <list>
+
+#include <cstring>
+#include <fstream>
+#include <QVector>
+#include <QUrl>
+#include <QAbstractListModel>
 
 using namespace std;
 
 /** Represents a input tape for Ram-Machine.
 
  */
-class ITape {
+class ITape : public QAbstractListModel {
+  Q_OBJECT
 private:
-    list<int> tape_;
+  QVector<int> tape_;
+  int pos_;
 public:
-    ITape(list<int> vec) {
-      tape_ = vec;
-    }
-    int readTape(void) {
-        int aux = tape_.front();
-        tape_.pop_front();
-        return aux;
-    }
+  ITape(QVector<int> vec, QObject *parent =0);
+
+  int readTape(void);
+
+  Q_INVOKABLE void loadInput(QUrl);
+
+  void reset(void);
+
+  int rowCount(const QModelIndex &parent = QModelIndex()) const;
+
+  QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 };

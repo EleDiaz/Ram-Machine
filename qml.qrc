@@ -4,5 +4,6 @@
         <file>Base.qml</file>
         <file>ProgramDelegate.qml</file>
         <file>TapeDelegate.qml</file>
+        <file>MemoryDelegate.qml</file>
     </qresource>
 </RCC>

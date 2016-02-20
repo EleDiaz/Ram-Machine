@@ -1,16 +1,15 @@
 TEMPLATE = app
 
-QT += qml quick
+QT += qml quick widgets
 CONFIG += c++11
 
 SOURCES += main.cpp \
-    uibind.cpp \
     src/machine.cpp \
     src/instruction.cpp \
     src/parse.cpp \
-    model.cpp \
-    tapemodel.cpp \
-    programmodel.cpp
+    src/itape.cpp \
+    src/otape.cpp \
+    src/memory.cpp
 
 RESOURCES += qml.qrc
 
@@ -27,11 +26,7 @@ HEADERS += \
     src/parse.hpp \
     src/memory.hpp \
     src/instruction.hpp \
-    src/counter.hpp \
-    uibind.hpp \
-    model.hpp \
-    tapemodel.hpp \
-    programmodel.hpp
+    src/counter.hpp
 
 
 DISTFILES += \

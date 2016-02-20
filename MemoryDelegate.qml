@@ -1,10 +1,10 @@
-import QtQuick 2.0
+import QtQuick 2.2
 import QtQuick.Layouts 1.1
 
 Item {
     id: root
+    width: ListView.view.width
     height: 24
-    width: 100
     property alias text: label.text
     property alias color: label.color
 
@@ -12,9 +12,9 @@ Item {
     signal remove()
 
     Rectangle {
+        color: "#66ffffff"
         anchors.fill: parent
-        color: '#ffffff'
-        opacity: 0.2
+        opacity: 1
         border.color: Qt.darker(color)
     }
 
@@ -38,19 +38,6 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 onClicked: root.clicked()
-            }
-        }
-        Item {
-            Layout.fillHeight: true
-            Layout.preferredWidth: icon.width
-            Image {
-                id: icon
-                anchors.centerIn: parent
-                //source: 'remove.png'
-            }
-            MouseArea {
-                anchors.fill: parent
-                onClicked: root.remove()
             }
         }
     }

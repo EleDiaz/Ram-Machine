@@ -6,7 +6,7 @@ using namespace std;
 
 class AdditionalInfo
 {
-private:
+protected:
     string addInfo;
 public:
     AdditionalInfo(string str) {
@@ -18,18 +18,18 @@ public:
     virtual ~AdditionalInfo() {};
 };
 
-class TokenUnknow : exception, AdditionalInfo
+class TokenUnknow : public exception, AdditionalInfo
 {
 public:
     TokenUnknow(string str):
         AdditionalInfo(str) {}
     virtual const char* what() const throw() {
-        return ("No se reconoce el token: " + info()).c_str();
+      return ("No se reconoce el token: " + info()).c_str();
     }
 };
 
 
-class UnexpectedToken : exception, AdditionalInfo
+class UnexpectedToken : public exception, AdditionalInfo
 {
 public:
     UnexpectedToken(string str):
@@ -39,17 +39,19 @@ public:
     }
 };
 
-class TagNotFound : exception, AdditionalInfo
+class TagNotFound : public exception, AdditionalInfo
 {
 public:
   TagNotFound(string str):
     AdditionalInfo(str) {}
+  TagNotFound(const TagNotFound & tag):
+    AdditionalInfo(tag.addInfo) {}
   virtual const char* what() const throw() {
     return ("No ha sido declarada la siguiente etiqueta: " + info()).c_str();;
   }
 };
 
-class ProgramError : exception, AdditionalInfo
+class ProgramError : public exception, AdditionalInfo
 {
 public:
   ProgramError(string str):
@@ -59,8 +61,19 @@ public:
   }
 };
 
+class TapeNoInput : public exception, AdditionalInfo
+{
+public:
+  TapeNoInput(string str):
+    AdditionalInfo(str) {}
+  virtual const char* what() const throw() {
+    return ("No hay valores de entrada " + info()).c_str();;
+  }
+};
 
-class ParseError : exception, AdditionalInfo
+
+
+class ParseError : public exception, AdditionalInfo
 {
 public:
   ParseError(string str):
@@ -69,3 +82,14 @@ public:
     return ("Error Parseando: " + info()).c_str();;
   }
 };
+
+class MemoryAccess : public exception, AdditionalInfo
+{
+public:
+  MemoryAccess(string str):
+    AdditionalInfo(str) {}
+  virtual const char* what() const throw() {
+    return ("Error accediendo a la memoria: " + info()).c_str();;
+  }
+};
+

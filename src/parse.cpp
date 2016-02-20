@@ -1,25 +1,37 @@
 #include "parse.hpp"
 
+#include <iostream>
+
 // INFO: Se esta usando \s como si fuese un \b debido a que nunca se da el caso de encontrar un \n
-Parser::Parser(ifstream & file) {
+Parser::Parser(ifstream & file):
+  tokens_(),
+  context_(),
+  lineOfCode(0)
+{
   if (!file.is_open())
     throw (-1);
 
   string line;
   while (getline(file, line)) {
-    if (regex_match(line, regex("^\\s*;.*"))) // comments
+    if (regex_match(line, regex("^\\s*;.*"))) {// comments
       tokens_.push_back(tuple<Token, string>(CommentT,line));
+    }
     else {
       smatch results;
-      if (regex_match(line, results, regex("^\\s*(\\w)\\s*:\\s*(.*)"))) {
+      if (regex_match(line, results, regex("^\\s*(\\w+)\\s*:\\s*(.*)"))) {
         tokens_.push_back(tuple<Token, string>(TagT, results[1]));
-        context_.insert(pair<string, int>(results[1], lineOfCode+1)); // Adding tag to context
 
-        if (results[2].length()>0 && !parserComments(results[2]))
+        if (results[2].length()>0 && !parserComments(results[2])) {
+          context_.insert(pair<string, int>(results[1], lineOfCode)); // Adding tag to context same line
           parserInstructions(results[2]);
+
+        } else {
+          context_.insert(pair<string, int>(results[1], lineOfCode+1)); // Adding tag to context only line
+        }
       }
-      else
+      else {
         parserInstructions(line);
+      }
     }
   }
 }
@@ -29,13 +41,16 @@ Program Parser::getProgram(void) {
   tuple<int, Memory::DirectionMode, bool> auxParams;
   auto helper = [&] (Instruction::IOpcode inst){
     tokens_.pop_front();
+    string temp = get<1>(tokens_.front());
     auxParams = getParams(); // param and mode
-    if (!(get<0>(auxParams) > 0 && get<2>(auxParams)))
-      ; // throw UnexpectedToken("`" + get<1>(auxParams) + "` sino =int,*int o int");
+    if ((!get<0>(auxParams) > 0 && !get<2>(auxParams))) {
+      throw UnexpectedToken("`" + temp + "` sino =int,*int o int");
+    }
     aux.push_back(Instruction(inst, get<0>(auxParams), get<1>(auxParams)));
   };
 
   while (!tokens_.empty()) {
+    cout << get<1>(tokens_.front()) << endl;
     switch (get<0>(tokens_.front())){
     case TagT:
       tokens_.pop_front();
@@ -49,7 +64,7 @@ Program Parser::getProgram(void) {
       tokens_.pop_front();
       auxParams = getParams();
       if (!(get<0>(auxParams) > 0 && get<2>(auxParams) && get<1>(auxParams) == Memory::Immediate))
-        ; // TODO: no se espera el siguiente token
+        ;//throw UnexpectedToken("Invalid parameter");
       aux.push_back(Instruction(Instruction::Store, get<0>(auxParams), get<1>(auxParams)));
       break;
 
@@ -57,7 +72,7 @@ Program Parser::getProgram(void) {
       tokens_.pop_front();
       auxParams = getParams();
       if (!(get<0>(auxParams) > 0 && get<2>(auxParams) && get<1>(auxParams) == Memory::Immediate))
-        ; // TODO: no se espera el siguiente token
+        ;//throw UnexpectedToken("Invalid parameter");
       aux.push_back(Instruction(Instruction::Read, get<0>(auxParams), get<1>(auxParams)));
       break;
 
@@ -111,6 +126,7 @@ Program Parser::getProgram(void) {
       break;
 
     case CommentT:
+      tokens_.pop_front();
       break;
 
     default:
@@ -126,20 +142,26 @@ tuple<int, Memory::DirectionMode, bool> Parser::getParams(void) {
   switch (get<0>(tokens_.front())){
   case DirectT:
     aux = stoi(get<1>(tokens_.front()));
+    tokens_.pop_front();
     return tuple<int, Memory::DirectionMode, bool> (aux, Memory::Direct, true);
 
   case IndirectT:
     aux = stoi(get<1>(tokens_.front()));
+    tokens_.pop_front();
     return tuple<int, Memory::DirectionMode, bool> (aux, Memory::Indirect, true);
 
   case ImmediateT:
     aux = stoi(get<1>(tokens_.front()));
+    tokens_.pop_front();
     return tuple<int, Memory::DirectionMode, bool> (aux, Memory::Immediate, true);
 
   case RefTagT:
+    for (auto i : context_) /// HERE
+      cout << get<0>(i) << " : " << get<1>(i) << endl;
     if (context_.end() == context_.find(get<1>(tokens_.front())))
       throw TagNotFound(get<1>(tokens_.front()));
     aux = context_[get<1>(tokens_.front())];
+    tokens_.pop_front();
     return tuple<int, Memory::DirectionMode, bool> (aux, Memory::Immediate, false);
 
   default:
@@ -169,7 +191,7 @@ void Parser::parserParam(string str) {
     tokens_.push_back(tuple<Token, string>(IndirectT, results[1]));
     parserComments(results[2]);
   }
-  else if (regex_match(str, results, regex("^(\\w)\\s*(.*)"))) {
+  else if (regex_match(str, results, regex("^(\\w+)\\s*(.*)"))) {
     tokens_.push_back(tuple<Token, string>(RefTagT, results[1]));
     parserComments(results[2]);
   }
@@ -180,7 +202,8 @@ void Parser::parserParam(string str) {
 void Parser::parserInstructions(string str) {
   smatch results;
 
-  auto helper = [&](string name) { return regex_match(str, results, regex("^"+name+"\\s+(.*)"));};
+  auto helper = [&](string name) {
+    return regex_match(str, results, regex("^\\s*"+name+"\\s*(.*)", regex_constants::icase));};
 
   map<string, Token> instructionsPairs
     { {"LOAD", LoadT}
@@ -204,6 +227,7 @@ void Parser::parserInstructions(string str) {
       tokens_.push_back(tuple<Token,string>(it->second,it->first));
       parserParam(results[1]);
       lineOfCode++; // nueva instrucción a establecer la siguiente linea de codigo
+      found = true;
     }
     it++;
   }

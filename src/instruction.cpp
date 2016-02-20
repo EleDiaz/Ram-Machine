@@ -5,7 +5,8 @@
 const vector<Instruction::Annotation> Instruction::instructions = {
   {"LOAD", [](int param_, Memory::DirectionMode mode_, Memory & mem,
               ITape & itape, OTape & otape, Counter & counter) {
-      mem.setAccumulator(mem.getValue(param_,mode_)); return false;
+      mem.setAccumulator(mem.getValue(param_,mode_));
+      return false;
     }},
   {"STORE", [](int param_, Memory::DirectionMode mode_, Memory & mem,
               ITape & itape, OTape & otape, Counter & counter) {
@@ -45,19 +46,19 @@ const vector<Instruction::Annotation> Instruction::instructions = {
     }},
   {"JUMP", [](int param_, Memory::DirectionMode mode_, Memory & mem,
               ITape & itape, OTape & otape, Counter & counter) {
-      counter.moveTo(mem.getValue(param_, mode_));
+      counter.moveTo(param_);
       return false;
     }},
   {"JGZT", [](int param_, Memory::DirectionMode mode_, Memory & mem,
               ITape & itape, OTape & otape, Counter & counter) {
       if (mem.getAccumulator() > 0)
-        counter.moveTo(mem.getValue(param_, mode_));
+        counter.moveTo(param_);
       return false;
     }},
   {"JZERO", [](int param_, Memory::DirectionMode mode_, Memory & mem,
               ITape & itape, OTape & otape, Counter & counter) {
       if (mem.getAccumulator() == 0)
-        counter.moveTo(mem.getValue(param_, mode_));
+        counter.moveTo(param_);
       return false;
     }},
 };

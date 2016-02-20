@@ -6,24 +6,47 @@ Item {
     width: ListView.view.width
     height: 24
     property alias text: label.text
-    property alias color: label.color
-
+    property alias number: num.text
+    property alias color: counter.color
+    property alias parameter: params.text
     signal clicked()
     signal remove()
 
     Rectangle {
+        color: "#66ffffff"
         anchors.fill: parent
-        color: '#ffffff'
-        opacity: 0.2
+        opacity: 1
         border.color: Qt.darker(color)
     }
 
     RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: 8
-        anchors.rightMargin: 8
+        anchors.leftMargin: 0
+        anchors.rightMargin: 0
         Item {
-            Layout.fillWidth: true
+            Layout.minimumHeight: 0
+            Layout.preferredWidth: -1
+            Layout.fillHeight: true
+            Layout.fillWidth: false
+            Layout.minimumWidth: 20
+            Rectangle {
+                id: counter
+                anchors.fill: parent
+                opacity: 1
+            }
+            Text {
+                id: num
+                color: "#ffffff"
+                anchors.rightMargin: 5
+                textFormat: Text.PlainText
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignRight
+                anchors.fill: parent
+            }
+        }
+        Item {
+            width: 100
+            Layout.fillWidth: false
             Layout.fillHeight: true
 
             Text {
@@ -32,7 +55,9 @@ Item {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.margins: 8
-                color: '#f7f7f7'
+                color: "#000000"
+                verticalAlignment: Text.AlignVCenter
+                font.bold: true
                 font.pixelSize: 14
             }
             MouseArea {
@@ -40,17 +65,19 @@ Item {
                 onClicked: root.clicked()
             }
         }
+
         Item {
+            width: 20
             Layout.fillHeight: true
-            Layout.preferredWidth: icon.width
-            Image {
-                id: icon
-                anchors.centerIn: parent
-                source: 'remove.png'
-            }
-            MouseArea {
+            Layout.fillWidth: true
+            Text {
+                id: params
+                width: 20
+                color: "#000000"
+                visible: true
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignLeft
                 anchors.fill: parent
-                onClicked: root.remove()
             }
         }
     }

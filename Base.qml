@@ -8,7 +8,7 @@ Item {
     property alias model: listView.model
     property alias delegate: listView.delegate
     property alias text: gb.title
-    Layout.minimumHeight: 60
+    //Layout.minimumHeight: 60
     GroupBox {
         id: gb
         anchors.fill: parent
@@ -21,12 +21,13 @@ Item {
             //Layout.minimumHeight: 50
             ListView {
                 id: listView
+                opacity: 1
                 anchors.centerIn: parent
                 anchors.fill: parent
                 model: modelIO
                 delegate: delegateIO
-                highlight: highlight
-                highlightFollowsCurrentItem: true
+                //highlight: highlight
+                //highlightFollowsCurrentItem: true
             }
         }
     }

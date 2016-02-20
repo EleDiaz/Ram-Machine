@@ -16,7 +16,7 @@ public:
     return pos_++;
   }
 
-  void next(void) {
-    pos_++;
+  int getCounterNoModify(void) const {
+    return pos_;
   }
 };

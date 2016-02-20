@@ -3,6 +3,9 @@
 
 #include <QDebug>
 #include <QObject>
+#include <QUrl>
+#include <QAbstractListModel>
+
 
 #include <list>
 #include <fstream>
@@ -15,18 +18,28 @@
 #include "itape.hpp"
 
 
-class Machine : public QObject {
+class Machine : public QAbstractListModel {
   Q_OBJECT
 private:
   Counter counter_;
+  int     oldCounter_;
   Program program_;
-  Memory  memory_;
-  ITape   iTape_;
-  OTape   oTape_;
+  Memory& memory_;
+  ITape&  iTape_;
+  OTape&  oTape_;
   bool    stop_;
 
 public:
-  explicit Machine(string filename, list<int> input, QObject *parent = 0);
+  enum InstructionRoles {
+    PC = Qt::UserRole + 1,
+    Name,
+    LineNumber,
+    Param
+  };
+
+  Machine(OTape & otape, ITape & itape, Memory & memory, QObject *parent = 0);
+
+  Q_INVOKABLE void loadFile(QUrl filename);
 
   Q_INVOKABLE void run(void);
 
@@ -34,8 +47,15 @@ public:
 
   Q_INVOKABLE void reset(void);
 
+  int rowCount(const QModelIndex & parent = QModelIndex()) const;
+
+  QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
+
+protected:
+    QHash<int, QByteArray> roleNames() const;
+
 signals:
-  void loaded();
+  void loadedITape(vector<int>);
 
 public slots:
 };

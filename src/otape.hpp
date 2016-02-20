@@ -2,20 +2,29 @@
 /**
 
   */
-
-#include <list>
+#include <QVector>
+#include <QAbstractListModel>
 
 using namespace std;
 
 /** Represents a input tape for Ram-Machine.
 
  */
-class OTape {
+class OTape : public QAbstractListModel {
+  Q_OBJECT
+
 private:
-  list<int> tape_;
+  QVector<int> tape_;
+
 public:
-  OTape(): tape_() {}
-  void writeTape(int val) {
-      tape_.push_front(val);
-  }
+  OTape(QObject *parent = 0);
+
+  void writeTape(int val);
+
+  void reset(void);
+
+  int rowCount(const QModelIndex &parent = QModelIndex()) const;
+
+  QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+
 };

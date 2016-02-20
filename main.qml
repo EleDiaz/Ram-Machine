@@ -2,35 +2,94 @@ import QtQuick 2.3
 import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.2
-
+import QtQuick.Dialogs 1.2
 
 Window {
+    id: root
     visible: true
     property int margin: 11
-    //anchors.fill: true
-
+    color: "#4b4b4b"
     minimumWidth: mainLayout.Layout.minimumWidth + 2 * margin
     minimumHeight: mainLayout.Layout.minimumHeight + 2 * margin
-    color: "#4d4d4d"
+    FileDialog {
+        id: fileDialog
+        title: "Please choose a ram program file"
+        folder: shortcuts.home + "/test/Ram-Machine"
+        nameFilters: [ "Source ram-machine files (*.ram)", "All files (*)" ]
+        onAccepted: {
+            machine.loadFile(fileDialog.fileUrl)
+        }
+
+    }
+
+    FileDialog {
+        id: inputFile
+        title: "Please choose a input file"
+        folder: shortcuts.home + "/test/Ram-Machine"
+        nameFilters: [ "All files (*)" ]
+        onAccepted: {
+            itape.loadInput(inputFile.fileUrl)
+        }
+    }
+
+    Dialog {
+        id: manualInput
+        title: "Introducir entrada:"
+        contentItem: Rectangle {
+            color: "#302F2F"
+            //implicitWidth: 400
+            //implicitHeight: 100
+            TextInput {
+                focus: true
+                color: "white"
+                text: "1 2 3"
+                font.bold: true
+                font.pointSize: 15
+                anchors.centerIn: parent
+                onAccepted: {
+                    // TODO:
+                    manualInput.close()
+                }
+            }
+        }
+    }
+
     ToolBar {
         id: toolbar
+        anchors.top: parent.top
+        anchors.topMargin: 0
+        anchors.left: parent.left
+        anchors.leftMargin: 0
+        anchors.right: parent.right
+        anchors.rightMargin: 0
         RowLayout {
+            spacing: 6
             anchors.fill: parent
+            visible: true
+            clip: false
             ToolButton {
                 text: "Open"
-                onClicked: ui.load()
+                onClicked: fileDialog.open()
+            }
+            ToolButton {
+                text: "Open input file"
+                onClicked: inputFile.open()
+            }
+            ToolButton {
+                text: "Save Output Tape"
+                onClicked: fileDialog.open()
             }
             ToolButton {
                 text: "Run"
-                onClicked: ui.run()
+                onClicked: machine.run()
             }
             ToolButton {
                 text: "Step"
-                onClicked: ui.step()
+                onClicked: machine.step()
             }
             ToolButton {
                 text: "Reset"
-                onClicked: ui.reset()
+                onClicked: machine.reset()
             }
             Item { Layout.fillWidth: true }
         }
@@ -47,23 +106,30 @@ Window {
 
         Base {
             id: input
+            color: qsTr("#c6c3c3")
             Layout.fillWidth: true
 
             Layout.columnSpan: 2
-            orientation: ListView.Horizontal
             text: "Input tape"
+            Layout.preferredHeight: -1
+            Layout.preferredWidth: -1
+            Layout.minimumHeight: 53
+            Layout.minimumWidth: 16
+            transformOrigin: Item.Center
+            Layout.fillHeight: false
+            orientation: 1
             model: itape
             delegate: TapeDelegate {
-                            text: model.display
-                            color: name
-                            onClicked: {
-                                ListView.view.currentIndex = index
-                                ListView.view.focus = true
-                            }
-                        }
+                text: model.display
+                onClicked: {
+                    manualInput.open()
+                }
+            }
+            MouseArea {
+                anchors.fill: parent
+                onClicked: manualInput.open()
+            }
         }
-
-
 
         Base {
             Layout.fillWidth: true
@@ -71,10 +137,12 @@ Window {
             Layout.columnSpan: 1
             width: 200; height: 250
             text: "Program"
-            model: myModel
+            model: machine
             delegate: ProgramDelegate {
-                text: type
-                color: name
+                text: name
+                number: line
+                parameter: param
+                color: pc
                 onClicked: {
                     ListView.view.currentIndex = index
                     ListView.view.focus = true
@@ -87,10 +155,9 @@ Window {
             Layout.minimumWidth: 200
             Layout.columnSpan: 1
             text: "Memory"
-            model: myModel
-            delegate: ProgramDelegate {
-                text: type
-                color: name
+            model: memory
+            delegate: MemoryDelegate {
+                text: model.display
                 onClicked: {
                     ListView.view.currentIndex = index
                     ListView.view.focus = true
@@ -103,17 +170,19 @@ Window {
             Layout.columnSpan: 2
             orientation: ListView.Horizontal
             text: "Output tape"
+            Layout.minimumHeight: 53
             model: otape
             delegate: TapeDelegate {
-                            text: model.display
-                            color: name
-                            onClicked: {
-                                ListView.view.currentIndex = index
-                                ListView.view.focus = true
-                            }
-                        }
+                text: model.display
+                onClicked: {
+                    ListView.view.currentIndex = index
+                    ListView.view.focus = true
+                }
+            }
         }
     }
+
+
 }
 
 //                Component {
