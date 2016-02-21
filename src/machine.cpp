@@ -6,6 +6,7 @@
 Machine::Machine(OTape & otape, ITape & itape, Memory & memory, QObject *parent):
   QAbstractListModel(parent),
   counter_(),
+  oldCounter_(),
   program_(),
   memory_(memory), // TODO: Esto debe cambiar
   iTape_(itape),
@@ -15,16 +16,21 @@ Machine::Machine(OTape & otape, ITape & itape, Memory & memory, QObject *parent)
 }
 
 void Machine::loadFile(QUrl filename) {
-  //resetInternalData();
   beginRemoveRows(QModelIndex(), 0, rowCount());
   endRemoveRows();
   ifstream file (filename.path().toStdString());
 
-  if (!file.is_open())
-    throw;
+  try {
+    if (!file.is_open())
+      throw -1;
 
-  Parser x = Parser(file);  // catch all in parse exceptions
-  program_ = x.getProgram(); // continue catching exceptions
+    Parser x = Parser(file);  // catch all in parse exceptions
+    program_ = x.getProgram(); // continue catching exceptions
+  }
+  catch (const char* e) {
+    cout << "Big error " << e << endl;
+  }
+
   beginInsertRows(QModelIndex(), 0, rowCount()-1);
   endInsertRows();
   reset();
@@ -33,14 +39,18 @@ void Machine::loadFile(QUrl filename) {
 
 void Machine::run(void) {
   if (!stop_) {
-    int old = counter_.getCounterNoModify();
-    while (!program_[counter_.getCounter()].runAction(memory_, iTape_, oTape_, counter_)) { // DANGER POSIBLE INFINITY LOOP
-      //int aux = counter_.pos_;
-      //cout << "Counter " << aux << endl;
-      int newest = counter_.getCounterNoModify();
-      emit dataChanged(index(newest,0),index(newest,0));
-      emit dataChanged(index(old,0),index(old,0));
-      old = counter_.getCounterNoModify();
+    try {
+      oldCounter_ = counter_.getCounterNoModify();
+      while (!program_[counter_.getCounter()].runAction(memory_, iTape_, oTape_, counter_)) { // DANGER POSIBLE INFINITY LOOP
+        int newest = counter_.getCounterNoModify();
+        emit dataChanged(index(newest,0), index(newest,0));
+        emit dataChanged(index(oldCounter_,0), index(oldCounter_,0));
+        oldCounter_ = newest;
+      }
+    }
+    catch (...) {
+      cout << "error big"<< endl;
+      stop_ = true;
     }
   }
   stop_ = true;
@@ -48,18 +58,25 @@ void Machine::run(void) {
 
 void Machine::step(void) {
   if (!stop_) {
-    int old = counter_.getCounterNoModify();
-    stop_ = program_[counter_.getCounter()].runAction(memory_, iTape_, oTape_, counter_);
-    int newest = counter_.getCounterNoModify();
-    emit dataChanged(index(newest,0),index(newest,0));
-    emit dataChanged(index(old,0),index(old,0));
+    try {
+      oldCounter_ = counter_.getCounterNoModify();
+      stop_ = program_[counter_.getCounter()].runAction(memory_, iTape_, oTape_, counter_);
+      int newest = counter_.getCounterNoModify();
+      emit dataChanged(index(newest,0), index(newest,0));
+      emit dataChanged(index(oldCounter_,0), index(oldCounter_,0));
+      oldCounter_ = newest;
+    }
+    catch (...) {
+      cout << "error big" << endl;
+    }
   }
 }
 
 void Machine::reset(void) {
   stop_ = false;
+  emit dataChanged(index(oldCounter_,0),index(oldCounter_,0));
   counter_.moveTo(0);
-  //memory_ = Memory(1000); // TODO: Esto debe cambiar
+  memory_.reset();
   iTape_.reset();
   oTape_.reset();
 }

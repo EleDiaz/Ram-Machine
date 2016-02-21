@@ -7,10 +7,11 @@ import QtQuick.Dialogs 1.2
 Window {
     id: root
     visible: true
-    property int margin: 11
+    //property int margin: 11
     color: "#4b4b4b"
     minimumWidth: mainLayout.Layout.minimumWidth + 2 * margin
     minimumHeight: mainLayout.Layout.minimumHeight + 2 * margin
+
     FileDialog {
         id: fileDialog
         title: "Please choose a ram program file"
@@ -37,8 +38,8 @@ Window {
         title: "Introducir entrada:"
         contentItem: Rectangle {
             color: "#302F2F"
-            //implicitWidth: 400
-            //implicitHeight: 100
+            implicitWidth: 400
+            implicitHeight: 100
             TextInput {
                 focus: true
                 color: "white"
@@ -47,8 +48,30 @@ Window {
                 font.pointSize: 15
                 anchors.centerIn: parent
                 onAccepted: {
-                    // TODO:
+                    itape.loadString(text)
                     manualInput.close()
+                }
+            }
+        }
+    }
+
+    Dialog {
+        id: memoryInput
+        title: "Introducir entrada:"
+        contentItem: Rectangle {
+            color: "#302F2F"
+            implicitWidth: 400
+            implicitHeight: 100
+            TextInput {
+                focus: true
+                color: "white"
+                text: "1 2 3"
+                font.bold: true
+                font.pointSize: 15
+                anchors.centerIn: parent
+                onAccepted: {
+                    memory.reset(parseInt(text))
+                    memoryInput.close()
                 }
             }
         }
@@ -101,7 +124,7 @@ Window {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: toolbar.bottom
-        anchors.margins: 2
+        anchors.margins: 10
         columns: 2
 
         Base {
@@ -158,9 +181,9 @@ Window {
             model: memory
             delegate: MemoryDelegate {
                 text: model.display
+                backgroundColor: model.decoration
                 onClicked: {
-                    ListView.view.currentIndex = index
-                    ListView.view.focus = true
+                    memoryInput.open()
                 }
             }
         }

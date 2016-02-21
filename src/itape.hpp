@@ -27,6 +27,8 @@ public:
 
   Q_INVOKABLE void loadInput(QUrl);
 
+  Q_INVOKABLE void loadString(QString);
+
   void reset(void);
 
   int rowCount(const QModelIndex &parent = QModelIndex()) const;

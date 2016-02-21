@@ -79,6 +79,10 @@ Item {
                 horizontalAlignment: Text.AlignLeft
                 anchors.fill: parent
             }
+            MouseArea {
+                anchors.fill: parent
+                onClicked: root.clicked()
+            }
         }
     }
 }

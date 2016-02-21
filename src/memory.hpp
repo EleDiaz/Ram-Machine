@@ -16,6 +16,7 @@ class Memory : public QAbstractListModel {
 private:
   // representar la memoria mediante un vector tal cual
   QVector<int> memory_;
+  int lastAccess_;
 public:
   enum DirectionMode {
     Direct,
@@ -33,7 +34,11 @@ public:
 
   int getValue(int direction, DirectionMode mode);
 
-  void updateModel(int dir);
+  void updateView(int pos);
+
+  Q_INVOKABLE void reset(int size);
+
+  void reset(void);
 
   int rowCount(const QModelIndex &parent = QModelIndex()) const;
 

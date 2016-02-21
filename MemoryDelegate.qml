@@ -7,12 +7,14 @@ Item {
     height: 24
     property alias text: label.text
     property alias color: label.color
+    property alias backgroundColor: rect.color
 
     signal clicked()
     signal remove()
 
     Rectangle {
-        color: "#66ffffff"
+        id: rect
+        //color: "#66ffffff"
         anchors.fill: parent
         opacity: 1
         border.color: Qt.darker(color)

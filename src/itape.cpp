@@ -28,18 +28,28 @@ void ITape::loadInput(QUrl filename) {
       pch = strtok(NULL, " ");
     }
   }
-  beginInsertRows(QModelIndex(), 0, rowCount());
-
+  beginInsertRows(QModelIndex(), 0, rowCount()-1);
   endInsertRows();
 }
 
+void ITape::loadString(QString aux) {
+  beginRemoveRows(QModelIndex(), 0, rowCount());
+  tape_.clear();
+  endRemoveRows();
+  string line = aux.toStdString();
+
+  char * pch = strtok(&line[0u]," ");
+  while (pch != nullptr) {
+    tape_.push_back(stoi(pch));
+    pch = strtok(NULL, " ");
+  }
+  beginInsertRows(QModelIndex(), 0, rowCount()-1);
+  endInsertRows();
+}
 
 int ITape::readTape(void) {
-  //beginRemoveRows(QModelIndex(),rowCount(), rowCount());
   int aux = tape_[pos_];
   pos_++;
-  //tape_.pop_front();
-  //endRemoveRows();
   return aux;
 }
 

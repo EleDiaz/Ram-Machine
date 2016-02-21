@@ -9,11 +9,11 @@ Parser::Parser(ifstream & file):
   lineOfCode(0)
 {
   if (!file.is_open())
-    throw (-1);
+    throw "No se ha podido abrir el fichero";
 
   string line;
   while (getline(file, line)) {
-    if (regex_match(line, regex("^\\s*;.*"))) {// comments
+    if (regex_match(line, regex("^\\s*;.*"))) { // comments
       tokens_.push_back(tuple<Token, string>(CommentT,line));
     }
     else {
@@ -39,16 +39,18 @@ Parser::Parser(ifstream & file):
 Program Parser::getProgram(void) {
   vector<Instruction> aux;
   tuple<int, Memory::DirectionMode, bool> auxParams;
+
   auto helper = [&] (Instruction::IOpcode inst){
     tokens_.pop_front();
     string temp = get<1>(tokens_.front());
     auxParams = getParams(); // param and mode
-    if ((!get<0>(auxParams) > 0 && !get<2>(auxParams))) {
-      throw UnexpectedToken("`" + temp + "` sino =int,*int o int");
+    if (((!get<0>(auxParams)) > 0 && !get<2>(auxParams))) {
+      throw (string("Se obtuvo el siguiente valor `") + temp + string("` se requiere uno de los siguientes sino =int,*int o int")).c_str();
     }
     aux.push_back(Instruction(inst, get<0>(auxParams), get<1>(auxParams)));
   };
 
+  string temp = get<1>(tokens_.front());
   while (!tokens_.empty()) {
     cout << get<1>(tokens_.front()) << endl;
     switch (get<0>(tokens_.front())){
@@ -62,17 +64,19 @@ Program Parser::getProgram(void) {
 
     case StoreT:
       tokens_.pop_front();
+      temp = get<1>(tokens_.front());
       auxParams = getParams();
-      if (!(get<0>(auxParams) > 0 && get<2>(auxParams) && get<1>(auxParams) == Memory::Immediate))
-        ;//throw UnexpectedToken("Invalid parameter");
+      if (!(get<0>(auxParams) > 0) || (!get<2>(auxParams)) || (get<1>(auxParams) == Memory::Immediate))
+        throw (string("Se obtubo el siguiente valor `") + temp + string("` se requiere uno de los siguientes sino *int o int")).c_str();
       aux.push_back(Instruction(Instruction::Store, get<0>(auxParams), get<1>(auxParams)));
       break;
 
     case ReadT:
       tokens_.pop_front();
+      temp = get<1>(tokens_.front());
       auxParams = getParams();
-      if (!(get<0>(auxParams) > 0 && get<2>(auxParams) && get<1>(auxParams) == Memory::Immediate))
-        ;//throw UnexpectedToken("Invalid parameter");
+      if (!(get<0>(auxParams) > 0) || (!get<2>(auxParams)) || (get<1>(auxParams) == Memory::Immediate))
+        throw (string("Se obtubo el siguiente valor `") + temp + string("` se requiere uno de los siguientes sino *int o int")).c_str();
       aux.push_back(Instruction(Instruction::Read, get<0>(auxParams), get<1>(auxParams)));
       break;
 
@@ -103,25 +107,28 @@ Program Parser::getProgram(void) {
 
     case JumpT:
       tokens_.pop_front();
+      temp = get<1>(tokens_.front());
       auxParams = getParams();
       if (get<2>(auxParams))
-        throw UnexpectedToken(get<1>(tokens_.front()) + "  Expected Token: Tag Name");
+        throw (string("Se obtubo el siguiente valor `") + temp + string("` Expected Token: Tag Name")).c_str();
       aux.push_back(Instruction(Instruction::Jump,get<0>(auxParams)));
       break;
 
     case JgztT:
       tokens_.pop_front();
+      temp = get<1>(tokens_.front());
       auxParams = getParams();
       if (get<2>(auxParams))
-        throw UnexpectedToken(get<1>(tokens_.front()) + "  Expected Token: Tag Name");
+        throw (string("Se obtubo el siguiente valor `") + temp + string("` Expected Token: Tag Name")).c_str();
       aux.push_back(Instruction(Instruction::Jgzt,get<0>(auxParams)));
       break;
 
     case JzeroT:
       tokens_.pop_front();
+      temp = get<1>(tokens_.front());
       auxParams = getParams();
       if (get<2>(auxParams))
-        throw UnexpectedToken(get<1>(tokens_.front()) + "  Expected Token: Tag Name");
+        throw (string("Se obtubo el siguiente valor `") + temp + string("` Expected Token: Tag Name")).c_str();
       aux.push_back(Instruction(Instruction::Jzero,get<0>(auxParams)));
       break;
 
@@ -130,7 +137,7 @@ Program Parser::getProgram(void) {
       break;
 
     default:
-      throw UnexpectedToken(get<1>(tokens_.front()));
+      throw ((string("Se obtubo el siguiente valor: ") + get<1>(tokens_.front())).c_str());
       break;
     }
   }
@@ -156,25 +163,29 @@ tuple<int, Memory::DirectionMode, bool> Parser::getParams(void) {
     return tuple<int, Memory::DirectionMode, bool> (aux, Memory::Immediate, true);
 
   case RefTagT:
-    for (auto i : context_) /// HERE
-      cout << get<0>(i) << " : " << get<1>(i) << endl;
+    //for (auto i : context_)
+    //  cout << get<0>(i) << " : " << get<1>(i) << endl;
     if (context_.end() == context_.find(get<1>(tokens_.front())))
-      throw TagNotFound(get<1>(tokens_.front()));
+      throw (string("No se ha encontrado el siguiente tag `") + get<1>(tokens_.front()) + string("` en el codigo")).c_str();
     aux = context_[get<1>(tokens_.front())];
     tokens_.pop_front();
     return tuple<int, Memory::DirectionMode, bool> (aux, Memory::Immediate, false);
 
   default:
-    throw UnexpectedToken(get<1>(tokens_.front())); // FIXME: Token type to text
+    throw ((string("Se obtubo el siguiente valor: ") + get<1>(tokens_.front())).c_str());
   }
 }
 
 
-bool Parser::parserComments(string str) {
+bool Parser::parserComments(string str) { // TODO: por aqui el parse se hace muy debil si no es comentario error
   bool temp = regex_match(str, regex("^\\s*;.*"));
-  if (temp)
-    tokens_.push_back(tuple<Token, string>(CommentT,str));
-  return temp;
+  if (temp) {
+    tokens_.push_back(tuple<Token, string>(CommentT, str));
+    return temp;
+  } else {
+    return temp;
+    //throw (string("Este cadena no tiene significado alguno " + str)).c_str();
+  }
 }
 
 void Parser::parserParam(string str) {

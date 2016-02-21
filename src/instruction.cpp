@@ -22,22 +22,22 @@ const vector<Instruction::Annotation> Instruction::instructions = {
     }},
   {"ADD", [](int param_, Memory::DirectionMode mode_, Memory & mem,
               ITape & itape, OTape & otape, Counter & counter) {
-      mem.setAccumulator(mem.getValue(param_,mode_) + mem.getValue(0,Memory::Direct));
+      mem.setAccumulator(mem.getAccumulator() + mem.getValue(param_,mode_));
       return false;
     }},
   {"SUB", [](int param_, Memory::DirectionMode mode_, Memory & mem,
               ITape & itape, OTape & otape, Counter & counter) {
-      mem.setAccumulator(mem.getValue(param_,mode_) - mem.getValue(0,Memory::Direct));
+      mem.setAccumulator(mem.getAccumulator() - mem.getValue(param_,mode_));
       return false;
     }},
   {"MUL", [](int param_, Memory::DirectionMode mode_, Memory & mem,
               ITape & itape, OTape & otape, Counter & counter) {
-      mem.setAccumulator(mem.getValue(param_,mode_) * mem.getValue(0,Memory::Direct));
+      mem.setAccumulator(mem.getAccumulator() * mem.getValue(param_,mode_));
       return false;
     }},
   {"DIV", [](int param_, Memory::DirectionMode mode_, Memory & mem,
               ITape & itape, OTape & otape, Counter & counter) {
-      mem.setAccumulator(mem.getValue(param_,mode_) / mem.getValue(0,Memory::Direct));
+      mem.setAccumulator(mem.getAccumulator() / mem.getValue(param_,mode_));
       return false;
     }},
   {"HALT", [](int param_, Memory::DirectionMode mode_, Memory & mem,
