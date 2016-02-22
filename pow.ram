@@ -1,0 +1,26 @@
+  READ 1
+  LOAD 1
+  JGZT else
+  WRITE =0
+  JUMP fin
+else:
+  LOAD 1
+  STORE 2
+  LOAD 1
+  SUB =1
+  STORE 3
+cond: LOAD 3
+  JGZT bucle
+  JUMP fin_bucle
+bucle:
+  LOAD 2
+  MUL 1
+  STORE 2
+  LOAD 3
+  SUB =1
+  STORE 3
+  JUMP cond
+fin_bucle:
+  WRITE 2
+fin:
+  HALT

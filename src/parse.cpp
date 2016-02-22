@@ -29,7 +29,7 @@ Parser::Parser(ifstream & file, string & error) :
           parserInstructions(results[2]);
 
         } else {
-          context_.insert(pair<string, int>(results[1], lineOfCode+1)); // Adding tag to context only line
+          context_.insert(pair<string, int>(results[1], lineOfCode)); // Adding tag to context only line
         }
       }
       else {
