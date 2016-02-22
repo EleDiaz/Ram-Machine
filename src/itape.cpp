@@ -48,6 +48,7 @@ void ITape::loadString(QString aux) {
 }
 
 int ITape::readTape(void) {
+
   int aux = tape_[pos_];
   pos_++;
   return aux;

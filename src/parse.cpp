@@ -3,7 +3,7 @@
 #include <iostream>
 
 // INFO: Se esta usando \s como si fuese un \b debido a que nunca se da el caso de encontrar un \n
-Parser::Parser(ifstream & file):
+Parser::Parser(ifstream & file) try :
   tokens_(),
   context_(),
   lineOfCode(0)
@@ -35,8 +35,12 @@ Parser::Parser(ifstream & file):
     }
   }
 }
+catch (const char * err) {
+  cout << "ocuurrio un error parseando" << err << endl;
+  throw;
+}
 
-Program Parser::getProgram(void) {
+Program Parser::getProgram(void) try {
   vector<Instruction> aux;
   tuple<int, Memory::DirectionMode, bool> auxParams;
 
@@ -143,6 +147,10 @@ Program Parser::getProgram(void) {
   }
   return aux;
 }
+catch (const char * err){
+  cout << err << "este es un error" << endl;
+  throw;
+}
 
 tuple<int, Memory::DirectionMode, bool> Parser::getParams(void) {
   int aux;
@@ -242,4 +250,5 @@ void Parser::parserInstructions(string str) {
     }
     it++;
   }
+  if (!found) {}
 }

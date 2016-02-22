@@ -26,7 +26,8 @@ HEADERS += \
     src/parse.hpp \
     src/memory.hpp \
     src/instruction.hpp \
-    src/counter.hpp
+    src/counter.hpp \
+    src/commonExceptions.hpp
 
 
 DISTFILES += \

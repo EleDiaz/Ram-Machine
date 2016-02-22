@@ -11,7 +11,7 @@ Machine::Machine(OTape & otape, ITape & itape, Memory & memory, QObject *parent)
   memory_(memory), // TODO: Esto debe cambiar
   iTape_(itape),
   oTape_(otape),
-  stop_(false)
+  stop_(true)
 {
 }
 
@@ -30,7 +30,6 @@ void Machine::loadFile(QUrl filename) {
   catch (const char* e) {
     cout << "Big error " << e << endl;
   }
-
   beginInsertRows(QModelIndex(), 0, rowCount()-1);
   endInsertRows();
   reset();
@@ -38,7 +37,7 @@ void Machine::loadFile(QUrl filename) {
 
 
 void Machine::run(void) {
-  if (!stop_) {
+  if (!stop_ && !program_.empty()) {
     try {
       oldCounter_ = counter_.getCounterNoModify();
       while (!program_[counter_.getCounter()].runAction(memory_, iTape_, oTape_, counter_)) { // DANGER POSIBLE INFINITY LOOP
@@ -57,7 +56,7 @@ void Machine::run(void) {
 }
 
 void Machine::step(void) {
-  if (!stop_) {
+  if (!stop_ && !program_.empty()) {
     try {
       oldCounter_ = counter_.getCounterNoModify();
       stop_ = program_[counter_.getCounter()].runAction(memory_, iTape_, oTape_, counter_);
@@ -66,8 +65,8 @@ void Machine::step(void) {
       emit dataChanged(index(oldCounter_,0), index(oldCounter_,0));
       oldCounter_ = newest;
     }
-    catch (...) {
-      cout << "error big" << endl;
+    catch (const char * err) {
+      cout << "error big" << err << endl;
     }
   }
 }
