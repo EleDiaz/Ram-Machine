@@ -65,6 +65,8 @@ enum Token {
 
 class Parser {
 private:
+  string & error_;
+
   list<tuple<Token, string> > tokens_;
 
   map<string, int> context_;
@@ -80,7 +82,7 @@ private:
   tuple<int, Memory::DirectionMode, bool> getParams(void);
 
 public:
-  Parser(ifstream & file);
+  Parser(ifstream & file, string & error);
 
   Program getProgram(void);
 };

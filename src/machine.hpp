@@ -20,6 +20,8 @@
 
 class Machine : public QAbstractListModel {
   Q_OBJECT
+  Q_PROPERTY(QString error READ error NOTIFY errorChanged)
+
 private:
   Counter counter_;
   int     oldCounter_;
@@ -28,6 +30,7 @@ private:
   ITape&  iTape_;
   OTape&  oTape_;
   bool    stop_;
+  QString error_;
 
 public:
   enum InstructionRoles {
@@ -47,6 +50,8 @@ public:
 
   Q_INVOKABLE void reset(void);
 
+  QString error(void);
+
   int rowCount(const QModelIndex & parent = QModelIndex()) const;
 
   QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
@@ -55,7 +60,7 @@ protected:
     QHash<int, QByteArray> roleNames() const;
 
 signals:
-  void loadedITape(vector<int>);
+  void errorChanged(void);
 
 public slots:
 };

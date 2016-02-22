@@ -48,7 +48,8 @@ void ITape::loadString(QString aux) {
 }
 
 int ITape::readTape(void) {
-
+  if (pos_ >= tape_.size())
+    throw "Not there are values in input tape";
   int aux = tape_[pos_];
   pos_++;
   return aux;

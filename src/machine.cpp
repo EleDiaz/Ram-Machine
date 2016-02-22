@@ -20,15 +20,18 @@ void Machine::loadFile(QUrl filename) {
   endRemoveRows();
   ifstream file (filename.path().toStdString());
 
+  string errors;
   try {
     if (!file.is_open())
       throw -1;
 
-    Parser x = Parser(file);  // catch all in parse exceptions
-    program_ = x.getProgram(); // continue catching exceptions
+    Parser x = Parser(file, errors);
+    program_ = x.getProgram();
   }
-  catch (const char* e) {
-    cout << "Big error " << e << endl;
+  catch (int a) {
+    cout << "Big error " << errors << endl;
+    error_ = QString::fromStdString(errors);
+    emit errorChanged();
   }
   beginInsertRows(QModelIndex(), 0, rowCount()-1);
   endInsertRows();
@@ -47,9 +50,10 @@ void Machine::run(void) {
         oldCounter_ = newest;
       }
     }
-    catch (...) {
-      cout << "error big"<< endl;
+    catch (const char * err) {
       stop_ = true;
+      error_ = QString::fromStdString(err);
+      emit errorChanged();
     }
   }
   stop_ = true;
@@ -66,7 +70,9 @@ void Machine::step(void) {
       oldCounter_ = newest;
     }
     catch (const char * err) {
-      cout << "error big" << err << endl;
+      stop_ = true;
+      error_ = QString::fromStdString(err);
+      emit errorChanged();
     }
   }
 }
@@ -79,6 +85,11 @@ void Machine::reset(void) {
   iTape_.reset();
   oTape_.reset();
 }
+
+QString Machine::error(void) {
+  return error_;
+}
+
 
 int Machine::rowCount(const QModelIndex & parent) const {
     Q_UNUSED(parent);

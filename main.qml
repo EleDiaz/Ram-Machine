@@ -11,6 +11,17 @@ Window {
     color: "#4b4b4b"
     minimumWidth: mainLayout.Layout.minimumWidth + 2 * margin
     minimumHeight: mainLayout.Layout.minimumHeight + 2 * margin
+    property string error: machine.error
+
+    onErrorChanged: {
+        dialogError.text = error
+        dialogError.open()
+    }
+
+    MessageDialog {
+        id: dialogError
+        title: "A ocurrido un error en el programa"
+    }
 
     FileDialog {
         id: fileDialog
