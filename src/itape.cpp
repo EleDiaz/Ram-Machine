@@ -30,6 +30,7 @@ void ITape::loadInput(QUrl filename) {
   }
   beginInsertRows(QModelIndex(), 0, rowCount()-1);
   endInsertRows();
+  file.close();
 }
 
 void ITape::loadString(QString aux) {

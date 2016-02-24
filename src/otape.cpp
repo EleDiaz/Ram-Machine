@@ -5,9 +5,11 @@ OTape::OTape(QObject *parent)
     tape_() {}
 
 void OTape::writeTape(int val) { // TODO
-  beginInsertRows(QModelIndex(), rowCount(), rowCount());
-  tape_.push_front(val);
+  beginRemoveRows(QModelIndex(), 0, rowCount());
+  endRemoveRows();
+  tape_.push_back(val);
   //insertRow(tape_.size()-1)
+  beginInsertRows(QModelIndex(), 0, rowCount()-1);
   endInsertRows();
 }
 
@@ -15,6 +17,18 @@ void OTape::reset(void) {
   beginRemoveRows(QModelIndex(), 0, rowCount());
   endRemoveRows();
   tape_.clear();
+}
+
+void OTape::saveTape(void) {
+  // ofstream file (filename.path().toStdString());
+  ofstream file ("salida.out");
+  if (!file.is_open())
+    throw;
+
+  for (int value : tape_) {
+    file << value << "\n";
+  }
+  file.close();
 }
 
 int OTape::rowCount(const QModelIndex &parent) const

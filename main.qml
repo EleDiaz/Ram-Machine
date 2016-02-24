@@ -111,7 +111,7 @@ Window {
             }
             ToolButton {
                 text: "Save Output Tape"
-                onClicked: fileDialog.open()
+                onClicked: otape.saveTape();
             }
             ToolButton {
                 text: "Run"

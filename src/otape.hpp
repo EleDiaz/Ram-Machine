@@ -4,6 +4,11 @@
   */
 #include <QVector>
 #include <QAbstractListModel>
+#include <QUrl>
+
+
+#include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -22,6 +27,8 @@ public:
   void writeTape(int val);
 
   void reset(void);
+
+  Q_INVOKABLE void saveTape(void);
 
   int rowCount(const QModelIndex &parent = QModelIndex()) const;
 
