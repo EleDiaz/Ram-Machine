@@ -19,6 +19,9 @@ Parser::Parser(ifstream & file, string & error) :
     if (regex_match(line, regex("^\\s*;.*"))) { // comments
       tokens_.push_back(tuple<Token, string>(CommentT,line));
     }
+    else if (regex_match(line, regex("\\s*"))) {
+      ;
+    }
     else {
       smatch results;
       if (regex_match(line, results, regex("^\\s*(\\w+)\\s*:\\s*(.*)"))) {
