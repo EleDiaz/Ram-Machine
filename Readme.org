@@ -1,2 +1,30 @@
 * Ram Machine
+La máquina ram es básica tiene un conjunto de instrucciones pequeño de un solo operador... Para más información buscar el repo de apuntes,
+en el que se encuentra la teoría de la máquina RAM. La asignatura es *Diseño de análisis de algoritmos* (DAA) impartida en la ULL.
 
+** Compilación
+Para compilar la máquina es necesario el entorno de QTCreator. Y todo lo demás es muy intuitivo como para explicarlo.
+
+** Screenshoots
+*** Ojo el programa no es detecta si un determinado programa tiene fin. Si se cuelga con Run, ya sabeis porque.
+[[./images/screenshoot.png]]
+
+
+*** Nota para cambiar cinta de entrada clickar en el, al igual si se quiere redimensionar los registros de la memoria.
+
+[[./images/screenshoot2.png]]
+
+
+
+** Notas a considerar!
+Esta máquina ram es funcional, pero tiene grandes hay grandes problemas en el manejo de excepcione (en general c++ apesta para manipular excepciones)
+Con lo que la clase que parsea debe ser ser ligeramente modificada para obtener los errores de parseo con mayor información. Ademas es probable que
+esa misma clase parseo se deba simplificar su lógica.
+
+- La screenshoots mostradas pueden que varien un poco, debido a que uso un tiling window manager (XMonad) y me quita las decoraciones de las ventanas
+- Es poco intuitivo la entrada de texto, esto se deberia mejorar "sin problemas", desde el qml.
+- Si no funciona *Run* o *Step*, haz *Reset*, es una peculiaridad que no tuve en cuenta cuando falla el parser.
+
+** Copyright
+Yo lo hice pero poco me sirve, así que lo dejo con la siguiente licencia.
+*WTFPL – Do What the Fuck You Want to Public License*
