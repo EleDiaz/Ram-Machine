@@ -6,11 +6,11 @@ en el que se encuentra la teoría de la máquina RAM. La asignatura es *Diseño 
 Para compilar la máquina es necesario el entorno de QTCreator. Y todo lo demás es muy intuitivo como para explicarlo.
 
 ** Screenshoots
-*** Ojo el programa no es detecta si un determinado programa tiene fin. Si se cuelga con Run, ya sabeis porque.
+*** Ojo el programa no detecta si un determinado programa tiene fin. Si se cuelga con Run, ya sabeis porque.
 [[./images/screenshoot.png]]
 
 
-*** Nota para cambiar cinta de entrada clickar en el, al igual si se quiere redimensionar los registros de la memoria.
+*** Nota para cambiar la cinta de entrada clickar en ella, al igual si se quiere redimensionar los registros de la memoria.
 
 [[./images/screenshoot2.png]]
 
